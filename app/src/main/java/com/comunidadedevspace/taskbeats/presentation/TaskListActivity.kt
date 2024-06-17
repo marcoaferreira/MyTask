@@ -13,6 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
+import com.comunidadedevspace.taskbeats.MyTasksApplication
 import com.comunidadedevspace.taskbeats.R
 import com.comunidadedevspace.taskbeats.data.AppDataBase
 import com.comunidadedevspace.taskbeats.data.Task
@@ -25,25 +26,6 @@ import java.io.Serializable
 
 class MainActivity : AppCompatActivity() {
 
-    // kotlin
-    private var taskList = arrayListOf(
-        Task(0, "Academia", "Treino de Costas/biceps"),
-        Task(1, "Academia", "Treimo de Peito/triceps"),
-        Task(2, "Corrida", "Longao"),
-        /*Task(3, "Learning", "Kotlin"),
-        Task(4, "Learning", "JS Data Structures"),
-        Task(5, "Bike", "Levar para revisao"),
-        Task(6, "ITBI", "Resolver lancamento ITBI"),
-        Task(7, "work", "finish slow queries debug"),
-        Task(8, "Kids", "Levar/buscar na escola"),
-        Task(9, "mercado", "comprar comida"),
-        Task(10, "horti-fruti", "comprar frutas/verduras"),
-        Task(11, "ceasa", "comprar vinagre/curcuma/banana"),
-        Task(12, "casa", "arrumar mangueira maq. lavar"),
-        Task(13, "casa", "verificar com Brandao grade solta"),
-        Task(14, "Sainte-Bruna", "Piso")*/
-    )
-
     private lateinit var ctnContent: LinearLayout
 
     // adapter
@@ -51,12 +33,12 @@ class MainActivity : AppCompatActivity() {
         TaskListAdapter(::onListItemClicked)
     }
 
-    private val dataBase by lazy{
-        Room.databaseBuilder(
-            applicationContext,
-            AppDataBase::class.java, "taskbeats-database"
-        ).build()
+    private val viewModel: TaskListViewModel by lazy {
+        TaskListViewModel.create(application)
     }
+
+    lateinit var dataBase: AppDataBase
+
     private val dao by lazy{
         dataBase.taskDao()
     }
@@ -82,11 +64,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_task_list)
         setSupportActionBar(findViewById(R.id.toolbar))
 
-        listFromDataBase()
         ctnContent = findViewById(R.id.ctn_content)
 
-        // remover??
-        /*adapter.submitList(taskList)*/
 
         // RecyclerView
         val rvTasks: RecyclerView = findViewById(R.id.rv_task_list)
@@ -96,6 +75,14 @@ class MainActivity : AppCompatActivity() {
         fab.setOnClickListener {
             openTaskListDetail(null)
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        dataBase = (application as MyTasksApplication).getAppDataBase()
+
+        listFromDataBase()
     }
 
     private fun insertIntoDataBase(task: Task){
