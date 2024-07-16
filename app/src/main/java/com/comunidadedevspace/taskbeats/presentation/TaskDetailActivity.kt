@@ -1,6 +1,5 @@
 package com.comunidadedevspace.taskbeats.presentation
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -10,7 +9,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
-/*import androidx.activity.enableEdgeToEdge*/
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -22,6 +21,10 @@ class TaskDetailActivity : AppCompatActivity() {
 
     private var task: Task? = null
     private lateinit var btnDone: Button
+
+    private val viewModel: TaskDetailViewModel by viewModels {
+        TaskDetailViewModel.getVMFactory(application)
+    }
 
     companion object{
         val TASK_DETAIL_EXTRA = "task.extra.detail"
@@ -92,7 +95,7 @@ class TaskDetailActivity : AppCompatActivity() {
         actionType: ActionType
     ){
         val task = Task(id, title, description)
-        returnAction(task, actionType)
+        performAction(task, actionType)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -105,7 +108,7 @@ class TaskDetailActivity : AppCompatActivity() {
             R.id.delete_task -> {
 
                 if(task != null) {
-                    returnAction(task!!, ActionType.DELETE)
+                    performAction(task!!, ActionType.DELETE)
                 } else {
                     showMessage(btnDone, "Item not found")
                 }
@@ -119,13 +122,9 @@ class TaskDetailActivity : AppCompatActivity() {
         }
     }
 
-    private fun returnAction(task: Task, actionType: ActionType){
-        val intent = Intent()
-            .apply {
-                val taskAction = TaskAction(task, actionType.name)
-                putExtra(TASK_ACTION_RESULT, taskAction)
-            }
-        setResult(Activity.RESULT_OK, intent)
+    private fun performAction(task: Task, actionType: ActionType){
+        val taskAction = TaskAction(task, actionType.name)
+        viewModel.execute(taskAction)
         finish()
     }
 

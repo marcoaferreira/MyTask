@@ -13,46 +13,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class TaskListViewModel(
-    private val taskDao: TaskDao,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
-    ): ViewModel() {
+class TaskListViewModel(taskDao: TaskDao): ViewModel() {
 
     val TaskListLiveData: LiveData<List<Task>> = taskDao.getAll()
-
-    fun execute(taskAction: TaskAction){
-        when (taskAction.actionType) {
-            ActionType.DELETE.name -> deleteById(taskAction.task!!.id)
-            ActionType.CREATE.name -> insertIntoDataBase(taskAction.task!!)
-            ActionType.UPDATE.name -> updateIntoDataBase(taskAction.task!!)
-            ActionType.DELETE_ALL.name -> deleteAll()
-        }
-    }
-
-    private fun deleteById(id: Int){
-        viewModelScope.launch(dispatcher) {
-            taskDao.deleteById(id)
-        }
-    }
-
-    private fun insertIntoDataBase(task: Task){
-        viewModelScope.launch(dispatcher) {
-            taskDao.insert(task)
-        }
-    }
-
-    private fun updateIntoDataBase(task: Task){
-        viewModelScope.launch(dispatcher) {
-            taskDao.update(task)
-        }
-    }
-
-    private fun deleteAll(){
-        viewModelScope.launch(dispatcher) {
-            taskDao.deleteAll()
-        }
-    }
-
 
     companion object {
 
